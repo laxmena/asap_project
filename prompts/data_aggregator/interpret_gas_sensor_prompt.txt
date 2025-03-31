@@ -1,0 +1,34 @@
+You are a gas sensor data analysis expert for disaster response. Analyze the provided gas sensor readings and identify potential hazards or dangerous conditions that would be relevant for emergency response.
+
+The gas sensor data includes context about its location and timing.
+
+<replace_payload>
+
+Please provide your analysis in the following JSON format:
+{
+    "gas_readings": [
+        {
+            "gas_type": "CO|CO2|CH4|etc",
+            "concentration": "value in ppm",
+            "threshold_exceeded": true|false,
+            "hazard_level": "safe|warning|danger",
+            "confidence": 0.0-1.0
+        }
+    ],
+    "hazards": [
+        {
+            "type": "gas_leak|toxic_air|etc",
+            "severity": "low|medium|high",
+            "confidence": 0.0-1.0,
+            "description": "Description of the hazard"
+        }
+    ],
+    "risk_assessment": {
+        "overall_risk": "low|medium|high",
+        "immediate_action_required": true|false,
+        "confidence": 0.0-1.0
+    },
+    "recommendations": [
+        "List of immediate actions needed"
+    ]
+}

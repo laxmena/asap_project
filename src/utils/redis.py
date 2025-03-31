@@ -5,6 +5,7 @@ from redis import Redis
 from rq import Queue
 from dotenv import load_dotenv
 import os
+from datetime import datetime
 
 from src.constants import QueueNames, RedisKeys
 
@@ -12,15 +13,11 @@ logger = logging.getLogger(__name__)
 
 class RedisUtils:
     def __init__(self):
-        """Initialize Redis connection and queues."""
+        """Initialize Redis connection and queue."""
         load_dotenv()
         redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
         self.redis_client = Redis.from_url(redis_url)
-        self.queues = {
-            QueueNames.TASK_ALLOCATOR.value: Queue(QueueNames.TASK_ALLOCATOR.value, connection=self.redis_client),
-            QueueNames.DRONE_AGENT.value: Queue(QueueNames.DRONE_AGENT.value, connection=self.redis_client),
-            QueueNames.GROUND_AGENT.value: Queue(QueueNames.GROUND_AGENT.value, connection=self.redis_client),
-        }
+        self.queue = Queue(QueueNames.MAIN_QUEUE.value, connection=self.redis_client)
 
     def _get_bot_key(self, bot_id: str) -> str:
         """Generate Redis key for a specific bot."""
@@ -72,24 +69,84 @@ class RedisUtils:
             logger.error(f"Error fetching all bots metadata: {str(e)}")
             return []
 
-    # TODO: Add more helper functions for differernt operations - enqueue_dataaggregator, enqueue_task_allocator, enqueue_task_allocator, etc.
-    def enqueue_task(self, queue_name: str, task_data: Dict[str, Any]) -> bool:
-        """Enqueue a task to a specific queue."""
+    def enqueue_task(self, task_type: str, task_data: Dict[str, Any]) -> bool:
+        """Enqueue a task with its type."""
         try:
-            if queue_name not in self.queues:
-                logger.error(f"Queue {queue_name} not found")
-                return False
+            # Add task type to the data
+            task_data["task_type"] = task_type
             
-            # For agent queues, we'll use a simple function name since the task is already processed
-            if queue_name.endswith('_agent_task'):
-                # TODO: Update the module to actually invoke the task in Agents
-                job = self.queues[queue_name].enqueue('process_agent_task', task_data)
-            else:
-                # For task allocator queue, use the full function path
-                job = self.queues[queue_name].enqueue('src.tasks.task_allocator', task_data)
+            # Enqueue to the main queue
+            job = self.queue.enqueue('src.workers.main_worker.process_task', task_data)
             
-            logger.info(f"Task enqueued to {queue_name} with job ID: {job.id}")
+            logger.info(f"Task enqueued to main queue with job ID: {job.id}")
             return True
         except Exception as e:
-            logger.error(f"Error enqueueing task to {queue_name}: {str(e)}")
-            return False 
+            logger.error(f"Error enqueueing task: {str(e)}")
+            return False
+
+    def store_event(self, event_id: str, event_data: Dict[str, Any]) -> bool:
+        """Store event data in Redis."""
+        try:
+            self.redis_client.set(event_id, json.dumps(event_data))
+            return True
+        except Exception as e:
+            logger.error(f"Error storing event {event_id}: {str(e)}")
+            return False
+
+    def get_event(self, event_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch event data from Redis."""
+        try:
+            data = self.redis_client.get(event_id)
+            if data:
+                return json.loads(data)
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching event {event_id}: {str(e)}")
+            return None
+
+    def delete_event(self, event_id: str) -> bool:
+        """Delete event data from Redis."""
+        try:
+            self.redis_client.delete(event_id)
+            return True
+        except Exception as e:
+            logger.error(f"Error deleting event {event_id}: {str(e)}")
+            return False
+
+    def store_weather_data(self, location_key: str, weather_data: Dict[str, Any]) -> bool:
+        """Store weather data in Redis."""
+        try:
+            self.redis_client.set(
+                f"{RedisKeys.WEATHER_DATA.value}:{location_key}",
+                json.dumps(weather_data)
+            )
+            self.redis_client.set(
+                f"{RedisKeys.WEATHER_LAST_UPDATE.value}:{location_key}",
+                str(datetime.now().timestamp())
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Error storing weather data for {location_key}: {str(e)}")
+            return False
+
+    def get_weather_data(self, location_key: str) -> Optional[Dict[str, Any]]:
+        """Fetch weather data from Redis."""
+        try:
+            data = self.redis_client.get(f"{RedisKeys.WEATHER_DATA.value}:{location_key}")
+            if data:
+                return json.loads(data)
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching weather data for {location_key}: {str(e)}")
+            return None
+
+    def get_weather_last_update(self, location_key: str) -> Optional[float]:
+        """Get timestamp of last weather data update."""
+        try:
+            timestamp = self.redis_client.get(f"{RedisKeys.WEATHER_LAST_UPDATE.value}:{location_key}")
+            if timestamp:
+                return float(timestamp)
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching weather last update for {location_key}: {str(e)}")
+            return None 

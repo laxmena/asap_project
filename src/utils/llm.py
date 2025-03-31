@@ -18,3 +18,5 @@ class LLMSingleton:
                 anthropic_api_key=os.getenv(ANTHROPIC_API_KEY_ENV)
             )
         return cls._instance 
+    
+    
