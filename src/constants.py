@@ -17,3 +17,9 @@ class BotTypes(Enum):
 # LLM Configuration
 LLM_MODEL = "claude-3-5-sonnet-latest"
 ANTHROPIC_API_KEY_ENV = "ANTHROPIC_API_KEY" 
+
+# Firebase Path in the Realtime Database
+path = '\hackproject'  
+
+#initalize the class variable and function call
+firebase_keys = "src/utils/firdb-2025-firebase-adminsdk-fbsvc-a566cdf29f.json"
