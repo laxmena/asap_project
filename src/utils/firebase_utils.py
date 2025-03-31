@@ -3,9 +3,9 @@ from firebase_admin import credentials
 from firebase_admin import db
 import os
 
-key_path = "src/utils/firdb-2025-firebase-adminsdk-fbsvc-a566cdf29f.json"  # Raw string
-database_url = 'https://firdb-2025-default-rtdb.firebaseio.com/'
-path = '\hackproject'  # Path in the Realtime Database
+from src.constants import firebase_auth,path,database_url
+
+key_path = firebase_auth  # key auth
 
 class FirebaseUtil:
     """Utility class for Firebase Realtime Database operations."""
@@ -83,7 +83,7 @@ class FirebaseUtil:
                 print(f"Bot data uploaded successfully for bot_id: {bot_id}")
         except Exception as e:
             print(f"Error uploading bot data: {e}")
-            
+
 #truncate all the data from hackproject. use it with caution
     def delete_data(self, path):
         """Deletes data at the specified path in the Realtime Database."""
