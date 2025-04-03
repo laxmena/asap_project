@@ -44,6 +44,16 @@ class TaskAllocator:
 
     def _dispatch_task(self, llm_response: Dict[str, Any]) -> bool:
         """Dispatch task to appropriate agent queue based on bot type."""
+        # If LLM response is empty, then return False
+        if not llm_response or not isinstance(llm_response, dict):
+            logger.info("[Task Allocator] LLM response is empty. No tasks are allocated")
+            return False
+        
+        # If bot_type is not in llm_response, then return False
+        if "bot_type" not in llm_response:
+            logger.info("[Task Allocator] Bot type is not in LLM response. No tasks are allocated")
+            return False
+       
         try:
             bot_type = llm_response.get("bot_type")
             queue_name = f"{bot_type}_agent_task"
@@ -101,7 +111,7 @@ class TaskAllocator:
                     llm_response = json.loads(response.content)
                     logger.info(f"LLM response: {llm_response}")
                 except json.JSONDecodeError as e:
-                    logger.debug(f"LLM total response: {response}")
+                    logger.info(f"LLM total response: {response}")
                     logger.error(f"Error parsing LLM response: {str(e)}")
                     return False
 

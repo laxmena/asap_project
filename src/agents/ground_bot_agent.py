@@ -8,7 +8,6 @@ from src.utils.redis import RedisUtils
 class GroundBotAgent:
     def __init__(self):
         self._setup()
-        self.llm = LLMSingleton.get_instance()
 
     def process_task(self, payload: Dict[str, Any]) -> bool:
         # Print the task and confirmation of task

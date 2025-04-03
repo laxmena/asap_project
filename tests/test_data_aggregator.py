@@ -7,6 +7,7 @@ from datetime import datetime
 import base64
 import io
 from PIL import Image
+import json
 
 # Add project root to Python path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -17,6 +18,59 @@ from src.constants import QueueNames, RedisKeys
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def setup_bot_metadata(redis_conn: Redis) -> bool:
+    """Set up bot metadata in Redis."""
+    try:
+        # Bot metadata entries
+        bots = [
+            {
+                "bot_type": "ground_bot",
+                "bot_id": "12",
+                "altitude": 22,
+                "lat": 12.1212,
+                "long": -121.234,
+                "battery_level": 22.3,
+                "status": "available",
+                "contains_aid_kit": True,
+                "capabilities": "Search - Scans the target disaster area, and collects information such as Photos, Distress voice signal recognition, Identify toxic gas emissions\n"
+                              "Assist Rescue - Assists human first responder during the rescue task\n"
+                              "Dispatch aid package - Dispatches items such as water, food, first aid kit, to the human survivors."
+            },
+            {
+                "bot_type": "drone_bot",
+                "bot_id": "21",
+                "altitude": 22,
+                "lat": 12.1212,
+                "long": -121.234,
+                "battery_level": 78.2,
+                "status": "available",
+                "capabilities": "Search - Scans the target disaster area. It collects and process Images, Thermal images, Hazard detection - such as fire, flood, structural damage."
+            },
+            {
+                "bot_type": "drone_bot",
+                "bot_id": "22",
+                "altitude": 22,
+                "lat": 12.1212,
+                "long": -121.234,
+                "battery_level": 78.2,
+                "status": "available",
+                "capabilities": "Search - Scans the target disaster area. It collects and process Images, Thermal images, Hazard detection - such as fire, flood, structural damage."
+            }
+        ]
+
+        # Store each bot's metadata
+        for bot in bots:
+            bot_id = bot["bot_id"]
+            key = f"{RedisKeys.BOTS_METADATA.value}:{bot_id}"
+            redis_conn.set(key, json.dumps(bot))
+            logger.info(f"Stored metadata for bot {bot_id}")
+
+        return True
+    except Exception as e:
+        logger.error(f"Error setting up bot metadata: {str(e)}")
+        return False
+
 
 def send_test_image_data(image_path):
     """Send a test image data to the main queue."""
@@ -164,7 +218,9 @@ def encode_image_to_base64(image_path, max_size=(640, 480), quality=60, max_file
     Returns:
         Base64 encoded string of the compressed image
     """
+    
     try:
+        
         # Create temp directory if it doesn't exist
         temp_dir = os.path.join(os.path.dirname(image_path), "temp")
         os.makedirs(temp_dir, exist_ok=True)
@@ -220,6 +276,9 @@ def encode_image_to_base64(image_path, max_size=(640, 480), quality=60, max_file
         raise
 
 if __name__ == "__main__":
+    redis_conn = Redis(host='localhost', port=6379)
+    setup_bot_metadata(redis_conn)
+    
     image_path = "datasets/sensor_data_samples/camera_images/wild_fire.jpeg"
     thermal_image_path = "datasets/sensor_data_samples/thermal_images/thermal_image.jpeg"        
     # Run all tests
