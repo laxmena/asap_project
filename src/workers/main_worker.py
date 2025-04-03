@@ -40,6 +40,12 @@ def process_task(task_data):
             command_system = CommandSystemAgent()
             success = command_system.process_data(task_data)
             success = True
+        elif task_type == "ground_bot_agent_task":
+            ground_bot_agent = GroundBotAgent()
+            success = ground_bot_agent.process_task(task_data)
+        elif task_type == "drone_bot_agent_task":
+            drone_bot_agent = DroneBotAgent()
+            success = drone_bot_agent.process_task(task_data)
         else:
             logger.error(f"Unknown task type: {task_type}")
             return False
