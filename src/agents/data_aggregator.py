@@ -72,9 +72,9 @@ class DataAggregator:
             prompt = json.dumps(payload, indent=4, ensure_ascii=False, default=str)
 
             #pretty print the prompt
-            print(prompt)
+            # print(prompt)
             response = self.llm.invoke(prompt)
-            print(response)
+            logger.info("Response: ",response)
             
             # pretty print the response
             print(json.dumps(json.loads(response.content), indent=4))
@@ -88,11 +88,12 @@ class DataAggregator:
         logger.info(f"Processing thermal image data")
         try:
             prompt_template = self._get_prompt_template(DataType.THERMAL_IMAGE.value)
-            logger.info(f"Prompt template: {prompt_template}")
+
             
             if not prompt_template:
                 return None
-
+                
+            logger.info(f"Prompt template fetched")
             payload = {
                 "role": "user",
                 "content": [
@@ -120,7 +121,7 @@ class DataAggregator:
             prompt = json.dumps(payload, indent=4, ensure_ascii=False, default=str)
             response = self.llm.invoke(prompt)
             
-            logger.info(f"Response: {json.dumps(json.loads(response.content), indent=4)}")
+            logger.debug(f"Response: {json.dumps(json.loads(response.content), indent=4)}")
             return json.loads(response.content)
         
         except Exception as e:
@@ -134,13 +135,18 @@ class DataAggregator:
                 return None
 
             payload = {
-                "report": data.get("report"),
-                "context": {
-                    "lat": data.get("lat"),
-                    "long": data.get("long"),
-                    "timestamp": data.get("timestamp"),
-                    "source": data.get("source")
-                }
+                "role": "user",
+                "content": [
+                    {
+                        "human_report": data.get("report"),
+                        "context": {
+                            "lat": data.get("lat"),
+                            "long": data.get("long"),
+                            "timestamp": data.get("timestamp"),
+                            "source": data.get("source")
+                        }
+                    },
+                ],
             }
 
             prompt = self._replace_payload_in_prompt(prompt_template, payload)
@@ -148,6 +154,8 @@ class DataAggregator:
                 return None
 
             response = self.llm.invoke(prompt)
+            logger.info(f"Response: ", response)
+            
             return json.loads(response.content)
         except Exception as e:
             logger.error(f"Error processing human report: {str(e)}")
@@ -174,6 +182,8 @@ class DataAggregator:
                 return None
 
             response = self.llm.invoke(prompt)
+            logger.info(f"Response: {json.dumps(json.loads(response.content), indent=4)}")
+
             return json.loads(response.content)
         except Exception as e:
             logger.error(f"Error processing gas sensor data: {str(e)}")
@@ -203,13 +213,17 @@ class DataAggregator:
             self.redis_utils.redis_client.set(event_id, json.dumps(event_data))
             
             # Pretty print the event data
-            logger.info(f"[STORE EVENT] Event data: {json.dumps(event_data, indent=4)}")
+            logger.debug(f"[STORE EVENT] Event data: {json.dumps(event_data, indent=4)}")
 
+            logger.info(f"Adding to geospatial index")
+            logger.debug(f"Event data: {event_data}")
+            
             # Add to geospatial index
             self.redis_utils.redis_client.geoadd(
                 RedisKeys.EVENTS_BY_LOCATION.value,
-                [ event_data["lon"], event_data["lat"],event_id]
+                [ event_data["lon"], event_data["lat"], event_id]
             )
+            logger.info(f"Successfully added event data to geospatial index")
 
             return True
         except Exception as e:

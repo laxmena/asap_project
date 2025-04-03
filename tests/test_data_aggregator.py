@@ -33,9 +33,10 @@ def send_test_image_data(image_path):
             "data_id": "test_image_1",
             "task_type": "data_aggregator",
             "data_type": "image",
-            "location": {"lat": 37.7749, "lon": -122.4194},
+            "lat": 37.7749, 
+            "long": -122.4194,
             "timestamp": datetime.now().isoformat(),
-            "source": "drone_1",
+            "source": "drone_234",
             "image_base64": image_base64,
         }
         
@@ -67,7 +68,7 @@ def send_test_thermal_data(image_path):
             "lat": 37.7749, 
             "long": -122.4194,
             "timestamp": datetime.now().isoformat(),
-            "source": "drone_1",
+            "source": "drone_1123123",
             "thermal_image_base64": thermal_image_base64,
         }
         
@@ -94,7 +95,8 @@ def send_test_human_report():
             "data_id": "test_report_1",
             "task_type": "data_aggregator",
             "data_type": "human_report",
-            "location": {"lat": 37.7749, "lon": -122.4194},
+            "lat": 37.7749, 
+            "long": -122.4194,
             "timestamp": datetime.now().isoformat(),
             "source": "ground_1",
             "report": {
@@ -127,14 +129,15 @@ def send_test_gas_data():
             "data_id": "test_gas_1",
             "task_type": "data_aggregator",
             "data_type": "gas_sensor",
-            "location": {"lat": 37.7749, "lon": -122.4194},
+            "lat": 37.7749, 
+            "long": -122.4194,
             "timestamp": datetime.now().isoformat(),
             "source": "drone_1",
-            "readings": {
-                "co": 5.2,
-                "co2": 420.0,
-                "ch4": 1.8,
-                "h2s": 0.1
+            "gas_levels": {
+                "co": 40,
+                "co2": 1233,
+                "ch4": 10000,
+                "h2s": 80
             },
             "hazard_level": "low"
         }
@@ -221,6 +224,6 @@ if __name__ == "__main__":
     thermal_image_path = "datasets/sensor_data_samples/thermal_images/thermal_image.jpeg"        
     # Run all tests
     # send_test_image_data(image_path)
-    send_test_thermal_data(thermal_image_path)
+    # send_test_thermal_data(thermal_image_path)
     # send_test_human_report()
-    # send_test_gas_data() 
+    send_test_gas_data() 

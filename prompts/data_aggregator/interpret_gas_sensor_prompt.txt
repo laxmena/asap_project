@@ -1,10 +1,17 @@
-You are a gas sensor data analysis expert for disaster response. Analyze the provided gas sensor readings and identify potential hazards or dangerous conditions that would be relevant for emergency response.
+Guidelines:
+1. Compare readings against safety thresholds
+2. Consider compound interactions
+3. Account for environmental factors
+4. Prioritize life safety
+5. Recommend specific protective measures
+The gas sensor data includes context about its location and timing. You respond only as a JSON response, and no additional text.
 
-The gas sensor data includes context about its location and timing.
+Input Format:
+<input>
+    <replace_payload>
+</input>
 
-<replace_payload>
-
-Please provide your analysis in the following JSON format:
+Expected JSON Response Format:
 {
     "gas_readings": [
         {
@@ -32,3 +39,35 @@ Please provide your analysis in the following JSON format:
         "List of immediate actions needed"
     ]
 }
+
+Reference Thresholds:
+CO (Carbon Monoxide):
+- Immediate Danger: >1200 ppm
+- High Risk: >400 ppm
+- Warning: >50 ppm
+- Safe: <50 ppm
+
+CO2 (Carbon Dioxide):
+- Immediate Danger: >40000 ppm
+- High Risk: >5000 ppm
+- Warning: >1000 ppm
+- Safe: <1000 ppm
+
+CH4 (Methane):
+- Explosive Range: 5-15% (50000-150000 ppm)
+- High Risk: >10000 ppm
+- Warning: >1000 ppm
+- Safe: <1000 ppm
+
+H2S (Hydrogen Sulfide):
+- Immediate Danger: >100 ppm
+- High Risk: >20 ppm
+- Warning: >10 ppm
+- Safe: <10 ppm
+
+Notes:
+- All thresholds assume standard temperature and pressure
+- Consider cumulative effects of multiple gases
+- Account for exposure duration
+- Flag any readings requiring immediate evacuation
+- Include confidence levels for all assessments
