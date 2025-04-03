@@ -61,48 +61,56 @@ class TaskAllocator:
         required_fields = ["task_id", "task_type", "lat", "long", "timestamp"]
         return all(field in task for field in required_fields)
 
-    def process_task(self, task: Dict[str, Any]) -> bool:
+    def process_task(self, payload: Dict[str, Any]) -> bool:
         """Process a single task and allocate it to an appropriate bot."""
+        tasks = payload.get("tasks")
+        metadata = payload.get("metadata")
+        
+        # If Task is just a JSON Object, then we need to wrap it in a list
+        if not isinstance(tasks, list):
+            tasks = [tasks]
+        
         try:
-            # Validate task data
-            if not self._validate_task(task):
-                logger.error(f"Invalid task data: {task}")
-                return False
+            for task in tasks:
+                # Validate task data
+                if not self._validate_task(task):
+                    logger.error(f"Invalid task data: {task}")
+                    return False
 
-            logger.info(f"Processing task {task.get('task_id')}")
+                logger.info(f"Processing task {task.get('task_id')}")
 
-            # Construct payload
-            payload = self._construct_payload(task)
-            logger.debug(f"Constructed payload: {json.dumps(payload, ensure_ascii=False, default=str)}")
+                # Construct payload
+                payload = self._construct_payload(task)
+                logger.debug(f"Constructed payload: {json.dumps(payload, ensure_ascii=False, default=str)}")
 
-            # Get and prepare prompt
-            prompt_template = self._get_prompt_template()
-            if not prompt_template:
-                return False
+                # Get and prepare prompt
+                prompt_template = self._get_prompt_template()
+                if not prompt_template:
+                    return False
 
-            prompt = self._replace_payload_in_prompt(prompt_template, payload)
-            if not prompt:
-                return False
+                prompt = self._replace_payload_in_prompt(prompt_template, payload)
+                if not prompt:
+                    return False
 
-            # Get LLM response
-            response = self.llm.invoke(prompt)
-            logger.debug(f"LLM Response: {response.content}")
+                # Get LLM response
+                response = self.llm.invoke(prompt)
+                logger.debug(f"LLM Response: {response.content}")
 
-            # Parse LLM response
-            try:
-                llm_response = json.loads(response.content)
-                logger.info(f"LLM response: {llm_response}")
-            except json.JSONDecodeError as e:
-                logger.debug(f"LLM total response: {response}")
-                logger.error(f"Error parsing LLM response: {str(e)}")
-                return False
+                # Parse LLM response
+                try:
+                    llm_response = json.loads(response.content)
+                    logger.info(f"LLM response: {llm_response}")
+                except json.JSONDecodeError as e:
+                    logger.debug(f"LLM total response: {response}")
+                    logger.error(f"Error parsing LLM response: {str(e)}")
+                    return False
 
-            # Dispatch task
-            success = self._dispatch_task(llm_response)
-            if success:
-                logger.info(f"Successfully dispatched task {task.get('task_id')}")
-            else:
-                logger.error(f"Failed to dispatch task {task.get('task_id')}")
+                # Dispatch task
+                success = self._dispatch_task(llm_response)
+                if success:
+                    logger.info(f"Successfully dispatched task {task.get('task_id')}")
+                else:
+                    logger.error(f"Failed to dispatch task {task.get('task_id')}")
 
             return success
 

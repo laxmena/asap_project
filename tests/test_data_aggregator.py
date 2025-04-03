@@ -225,5 +225,5 @@ if __name__ == "__main__":
     # Run all tests
     # send_test_image_data(image_path)
     # send_test_thermal_data(thermal_image_path)
-    # send_test_human_report()
-    send_test_gas_data() 
+    send_test_human_report()
+    # send_test_gas_data() 

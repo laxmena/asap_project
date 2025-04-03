@@ -154,7 +154,6 @@ class DataAggregator:
                 return None
 
             response = self.llm.invoke(prompt)
-            logger.info(f"Response: ", response)
             
             return json.loads(response.content)
         except Exception as e:

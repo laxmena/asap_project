@@ -10,6 +10,7 @@ class RedisKeys(Enum):
     EVENTS_BY_LOCATION = "events:location"
     WEATHER_DATA = "weather:data"
     WEATHER_LAST_UPDATE = "weather:last_update"
+    COMMAND_SYSTEM_RESPONSE = "command_system:response"
 
 class BotTypes(Enum):
     DRONE = "drone_bot"

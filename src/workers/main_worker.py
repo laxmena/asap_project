@@ -12,7 +12,7 @@ sys.path.insert(0, project_root)
 from src.constants import QueueNames
 from src.agents.task_allocator import TaskAllocator
 from src.agents.data_aggregator import DataAggregator
-
+from src.agents.command_system_agent import CommandSystemAgent
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -35,10 +35,11 @@ def process_task(task_data):
         elif task_type == "data_aggregator":
             data_aggregator = DataAggregator()
             logger.info(f"Processing data aggregator task")
-            logger.info(f"Task data: {task_data}")
             success = data_aggregator.process_data(task_data)
         elif task_type == "command_system":
-            print(f"Processing command system task")
+            command_system = CommandSystemAgent()
+            success = command_system.process_data(task_data)
+            success = True
         else:
             logger.error(f"Unknown task type: {task_type}")
             return False
