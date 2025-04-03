@@ -13,6 +13,9 @@ from src.constants import QueueNames
 from src.agents.task_allocator import TaskAllocator
 from src.agents.data_aggregator import DataAggregator
 from src.agents.command_system_agent import CommandSystemAgent
+from src.agents.ground_bot_agent import GroundBotAgent
+from src.agents.drone_bot_agent import DroneBotAgent
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
