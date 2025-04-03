@@ -102,11 +102,11 @@ Please find instructions in the [Setup Guide](./docs/setup_guide.md).
 
 
 ## Contact
-- Lakshmanan Meiyappan
-- Padmini Udayakumar
-- Sharat Naik
-- Priyanka Bhangale
-- Ashwin Srivatsa
+- [Lakshmanan Meiyappan]() | [GitHub](https://github.com/laxmena)
+- [Padmini Udayakumar](https://www.linkedin.com/in/paddmini/) | [GitHub](https://github.com/Paddmini)
+- [Sharat Naik](https://www.linkedin.com/in/sharatnaik1996/) | [GitHub](https://github.com/Sharat005)
+- [Priyanka Bhangale](https://www.linkedin.com/in/priyanka-bhangale/) | [GitHub](https://github.com/priyankapbh)
+- [Ashwin Srivatsa](https://www.linkedin.com/in/ashwin-bhaskar-srivatsa-3ab953122/) | [GitHub](https://github.com/Ashwin1234)
 
 
 ## Python Env Setup Instructions
