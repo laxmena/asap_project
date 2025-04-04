@@ -3,10 +3,19 @@ import logging
 from typing import Dict, Any, Optional
 from datetime import datetime
 from src.utils.redis import RedisUtils
+import time
+import random
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class GroundBotAgent:
     def __init__(self):
+        self.redis_utils = RedisUtils()
         self._setup()
 
     def process_task(self, payload: Dict[str, Any]) -> bool:

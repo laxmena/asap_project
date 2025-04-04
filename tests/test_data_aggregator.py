@@ -155,7 +155,7 @@ def send_test_human_report():
             "source": "ground_1",
             "report": {
                 "type": "survivor_found",
-                "details": "Found 2 survivors in building basement",
+                "details": "Fire found in the building",
                 "urgency": "high"
             }
         }

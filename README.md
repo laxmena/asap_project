@@ -1,7 +1,6 @@
 # ASAP: Autonomous Search and Assistance Protocol
 *Revolutionizing Disaster Response through Intelligent Multi-Agent Systems*
 
-
 ## The Challenge
 In disaster scenarios, every second counts, yet traditional search and rescue operations face critical limitations:
 

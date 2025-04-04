@@ -10,6 +10,11 @@ from src.utils.llm import LLMSingleton
 from src.constants import DataSourceType, DataType, RedisKeys, QueueNames
 from time import sleep
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 class DataAggregator:

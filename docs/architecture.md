@@ -68,10 +68,11 @@ The Autonomous Search and Assistance Protocol (ASAP) system is designed to coord
 - **Emergency Supply Delivery:** First aid, water, food
 
 ## Communication Mechanism
-- **Message Bus (RabbitMQ/Redis):** Enables async, real-time communication
+- **Message Bus (Redis):** Enables async, real-time communication
 - **Heartbeats:** Agents send status updates to detect failures
 - **Reassignment Strategy:** If an agent fails, tasks get redistributed
 
+<!-- 
 ## ML/AI Models Used
 | Component         | Model/Technology Used |
 |------------------|----------------------|
@@ -79,7 +80,7 @@ The Autonomous Search and Assistance Protocol (ASAP) system is designed to coord
 | Rescue Agent    | MediaPipe, LLM |
 | Coordination    | Priority Queue ML, (Later Reinforcement Learning) |
 | Command System  | Foundational model-assisted task generation |
-| Data Aggregator | Kalman Filters, NLP Summarization |
+| Data Aggregator | Kalman Filters, NLP Summarization | -->
 
 ## Simulation Plan
 - **Data Inputs:** Pre-collected disaster datasets (thermal images, gas sensor data, etc.)
@@ -92,4 +93,3 @@ The Autonomous Search and Assistance Protocol (ASAP) system is designed to coord
 ## Deployment Strategy
 - **Local Setup:** Run all agents as Python services communicating via Redis/RabbitMQ
 - **Future Expansion:** Physical robot integration with ROS2
-

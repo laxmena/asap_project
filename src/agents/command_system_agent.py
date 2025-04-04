@@ -10,8 +10,6 @@ from src.utils.llm import LLMSingleton
 from src.constants import DataSourceType, DataType, RedisKeys, QueueNames
 from time import sleep
 
-logger = logging.getLogger(__name__)
-
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -49,7 +47,7 @@ class CommandSystemAgent:
 
     def process_data(self, task_data: Dict[str, Any]) -> bool:
         """Process the data and return a boolean value."""
-        logger.info("Processing command system data")
+        logger.info("[COMMAND SYSTEM AGENT] Processing command system data")
         events = task_data.get("events")
 
         prompt_template = self._get_prompt_template("command_system")
