@@ -9,32 +9,27 @@ from src.utils.redis import RedisUtils
 from src.utils.llm import LLMSingleton
 from src.constants import DataSourceType, DataType, RedisKeys, QueueNames
 from time import sleep
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+from src.utils.logging_utils import LoggerSetup
 
 class DataAggregator:
-    def __init__(self):
+    def __init__(self, session_id: Optional[str] = None):
         """Initialize DataAggregator with Redis connection and LLM setup."""
         self.redis_utils = RedisUtils()
         self.llm = LLMSingleton.get_instance()
         self.weather_api_key = os.getenv("OPENWEATHER_API_KEY")
         self.weather_api_url = "http://api.openweathermap.org/data/2.5/weather"
+        self.logger = LoggerSetup.get_logger(session_id=session_id, name=__name__)
 
     def _get_prompt_template(self, data_type: str) -> Optional[str]:
         """Read and prepare the prompt template based on data type."""
         try:
-            logger.info(f"Getting prompt template for {data_type}")
+            self.logger.info(f"[DATA AGGREGATOR] Getting prompt template for {data_type}")
             prompt_file = f"prompts/data_aggregator/interpret_{data_type}_prompt.txt"
             with open(prompt_file, "r") as f:
                 prompt_template = f.read()
             return prompt_template
         except Exception as e:
-            logger.error(f"Error reading prompt template for {data_type}: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error reading prompt template for {data_type}: {str(e)}")
             return None
 
     def _replace_payload_in_prompt(self, prompt_template: str, payload: Dict[str, Any]) -> str:
@@ -42,11 +37,12 @@ class DataAggregator:
             payload_str = json.dumps(payload, indent=4, ensure_ascii=False, default=str)
             return prompt_template.replace("<replace_payload>", payload_str)
         except Exception as e:
-            logger.error(f"Error replacing payload in prompt: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error replacing payload in prompt: {str(e)}")
             return ""
 
     def _process_image_data(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         try:
+            self.logger.info("[DATA AGGREGATOR] Processing image data")
             prompt_template = self._get_prompt_template(DataType.IMAGE.value)
             if not prompt_template:
                 return None
@@ -75,30 +71,26 @@ class DataAggregator:
                 ],
             }
             prompt = json.dumps(payload, indent=4, ensure_ascii=False, default=str)
+            # self.logger.debug(f"[DATA AGGREGATOR] Generated prompt: {prompt}")
 
-            #pretty print the prompt
-            # print(prompt)
+            self.logger.info("[DATA AGGREGATOR] Invoking LLM for image processing")
             response = self.llm.invoke(prompt)
-            logger.info("Response: ",response)
-            
-            # pretty print the response
-            print(json.dumps(json.loads(response.content), indent=4))
+            self.logger.debug(f"[DATA AGGREGATOR] LLM Response: {json.dumps(json.loads(response.content), indent=4)}")
             
             return json.loads(response.content)
         except Exception as e:
-            logger.error(f"Error processing image data: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error processing image data: {str(e)}")
             return None
 
     def _process_thermal_image_data(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        logger.info(f"Processing thermal image data")
+        self.logger.info("[DATA AGGREGATOR] Processing thermal image data")
         try:
             prompt_template = self._get_prompt_template(DataType.THERMAL_IMAGE.value)
-
             
             if not prompt_template:
                 return None
                 
-            logger.info(f"Prompt template fetched")
+            self.logger.info("[DATA AGGREGATOR] Prompt template fetched")
             payload = {
                 "role": "user",
                 "content": [
@@ -124,17 +116,21 @@ class DataAggregator:
             }
             
             prompt = json.dumps(payload, indent=4, ensure_ascii=False, default=str)
-            response = self.llm.invoke(prompt)
+            # self.logger.debug(f"[DATA AGGREGATOR] Generated prompt: {prompt}")
             
-            logger.debug(f"Response: {json.dumps(json.loads(response.content), indent=4)}")
+            self.logger.info("[DATA AGGREGATOR] Invoking LLM for thermal image processing")
+            response = self.llm.invoke(prompt)
+            self.logger.debug(f"[DATA AGGREGATOR] LLM Response: {json.dumps(json.loads(response.content), indent=4)}")
+            
             return json.loads(response.content)
         
         except Exception as e:
-            logger.error(f"Error processing thermal image data: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error processing thermal image data: {str(e)}")
             return None
 
     def _process_human_report(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         try:
+            self.logger.info("[DATA AGGREGATOR] Processing human report")
             prompt_template = self._get_prompt_template(DataType.HUMAN_REPORT.value)
             if not prompt_template:
                 return None
@@ -158,15 +154,19 @@ class DataAggregator:
             if not prompt:
                 return None
 
+            # self.logger.debug(f"[DATA AGGREGATOR] Generated prompt: {prompt}")
+            self.logger.info("[DATA AGGREGATOR] Invoking LLM for human report processing")
             response = self.llm.invoke(prompt)
+            self.logger.debug(f"[DATA AGGREGATOR] LLM Response: {json.dumps(json.loads(response.content), indent=4)}")
             
             return json.loads(response.content)
         except Exception as e:
-            logger.error(f"Error processing human report: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error processing human report: {str(e)}")
             return None
 
     def _process_gas_sensor_data(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         try:
+            self.logger.info("[DATA AGGREGATOR] Processing gas sensor data")
             prompt_template = self._get_prompt_template(DataType.GAS_SENSOR.value)
             if not prompt_template:
                 return None
@@ -185,17 +185,20 @@ class DataAggregator:
             if not prompt:
                 return None
 
+            # self.logger.debug(f"[DATA AGGREGATOR] Generated prompt: {prompt}")
+            self.logger.info("[DATA AGGREGATOR] Invoking LLM for gas sensor data processing")
             response = self.llm.invoke(prompt)
-            logger.info(f"Response: {json.dumps(json.loads(response.content), indent=4)}")
+            self.logger.debug(f"[DATA AGGREGATOR] LLM Response: {json.dumps(json.loads(response.content), indent=4)}")
 
             return json.loads(response.content)
         except Exception as e:
-            logger.error(f"Error processing gas sensor data: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error processing gas sensor data: {str(e)}")
             return None
 
     def _fetch_weather_data(self, lat: float, lon: float) -> Optional[Dict[str, Any]]:
         """Fetch weather data from OpenWeather API."""
         try:
+            self.logger.info(f"[DATA AGGREGATOR] Fetching weather data for coordinates: {lat}, {lon}")
             params = {
                 "lat": lat,
                 "lon": lon,
@@ -204,40 +207,38 @@ class DataAggregator:
             }
             response = requests.get(self.weather_api_url, params=params)
             response.raise_for_status()
-            return response.json()
+            weather_data = response.json()
+            self.logger.debug(f"[DATA AGGREGATOR] Weather data: {json.dumps(weather_data, indent=4)}")
+            return weather_data
         except Exception as e:
-            logger.error(f"Error fetching weather data: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error fetching weather data: {str(e)}")
             return None
 
     def _store_event(self, event_data: Dict[str, Any]) -> bool:
         """Store event data in Redis with geospatial indexing."""
         try:
-            # Store event data
+            self.logger.info("[DATA AGGREGATOR] Storing event data")
             event_id = f"event:{datetime.now().timestamp()}"
             self.redis_utils.redis_client.set(event_id, json.dumps(event_data))
             
-            # Pretty print the event data
-            logger.debug(f"[STORE EVENT] Event data: {json.dumps(event_data, indent=4)}")
+            # self.logger.debug(f"[DATA AGGREGATOR] Event data: {json.dumps(event_data, indent=4)}")
 
-            logger.info(f"Adding to geospatial index")
-            logger.debug(f"Event data: {event_data}")
-            
-            # Add to geospatial index
+            self.logger.info("[DATA AGGREGATOR] Adding to geospatial index")
             self.redis_utils.redis_client.geoadd(
                 RedisKeys.EVENTS_BY_LOCATION.value,
                 [ event_data["lon"], event_data["lat"], event_id]
             )
-            logger.info(f"Successfully added event data to geospatial index")
+            self.logger.info("[DATA AGGREGATOR] Successfully added event data to geospatial index")
 
             return True
         except Exception as e:
-            logger.error(f"Error storing event: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error storing event: {str(e)}")
             return False
 
     def _get_nearby_events(self, lat: float, lon: float, radius: float = 1.0) -> List[Dict[str, Any]]:
         """Get events within a specified radius of coordinates."""
         try:
-            # Get event IDs within radius
+            self.logger.info(f"[DATA AGGREGATOR] Getting nearby events for coordinates: {lat}, {lon}")
             event_ids = self.redis_utils.redis_client.geosearch(
                 RedisKeys.EVENTS_BY_LOCATION.value,
                 longitude=lon,
@@ -246,33 +247,32 @@ class DataAggregator:
                 unit="km"
             )
 
-            # Fetch event data
             events = []
             for event_id in event_ids:
                 event_data = self.redis_utils.redis_client.get(event_id)
                 if event_data:
                     events.append(json.loads(event_data))
 
+            self.logger.debug(f"[DATA AGGREGATOR] Found {len(events)} nearby events")
             return events
         except Exception as e:
-            logger.error(f"Error getting nearby events: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error getting nearby events: {str(e)}")
             return []
 
     def process_data(self, data: Dict[str, Any]) -> bool:
         """Process incoming data and store events."""
         try:
+            self.logger.info("[DATA AGGREGATOR] Starting data processing")
+            # self.logger.debug(f"[DATA AGGREGATOR] Input data: {json.dumps(data, indent=4)}")
+            
             data_type = data.get("data_type")
             processed_data = None
 
-            logger.info(f"Processing data of type {data_type}")
+            self.logger.info(f"[DATA AGGREGATOR] Processing data of type {data_type}")
             
-            # weather_data = self._fetch_weather_data(data.get("lat"), data.get("long"))
-            
-            # Process based on data type
             if data_type in ["image", "jpeg"]:
                 processed_data = self._process_image_data(data)
             elif data_type == "thermal_image":
-                logger.info(f"Processing thermal image data")
                 processed_data = self._process_thermal_image_data(data)
             elif data_type == "human_report":
                 processed_data = self._process_human_report(data)
@@ -280,10 +280,9 @@ class DataAggregator:
                 processed_data = self._process_gas_sensor_data(data)
 
             if not processed_data:
-                logger.error(f"Failed to process data of type {data_type}")
+                self.logger.error(f"[DATA AGGREGATOR] Failed to process data of type {data_type}")
                 return False
 
-            # Store processed event
             event_data = {
                 "source": data.get("source"),
                 "timestamp": data.get("timestamp"),
@@ -292,14 +291,13 @@ class DataAggregator:
                 "data_type": data_type,
                 "processed_data": processed_data
             }
-            # Pretty print the event data
-            logger.debug(f"Event data: {json.dumps(event_data, indent=4)}")
+            
+            self.logger.debug(f"[DATA AGGREGATOR] Event data: {json.dumps(event_data, indent=4)}")
             
             if not self._store_event(event_data):
-                logger.error("Failed to store event")
+                self.logger.error("[DATA AGGREGATOR] Failed to store event")
                 return False
 
-            # Get nearby events and forward to command system
             nearby_events = self._get_nearby_events(
                 float(data.get("lat")),
                 float(data.get("long"))
@@ -308,17 +306,18 @@ class DataAggregator:
             command_system_payload = {
                 "events": nearby_events,
             }
-            # pretty print the command system payload
-            logger.debug(f"Command system payload: {json.dumps(command_system_payload, indent=4)}")
             
-            # Forward to command system
+            self.logger.debug(f"[DATA AGGREGATOR] Command system payload: {json.dumps(command_system_payload, indent=4)}")
+            
+            self.logger.info("[DATA AGGREGATOR] Forwarding to command system")
             self.redis_utils.enqueue_task(
                 "command_system",
                 command_system_payload
             )
 
+            self.logger.info("[DATA AGGREGATOR] Processing completed successfully")
             return True
 
         except Exception as e:
-            logger.error(f"Error processing data: {str(e)}")
+            self.logger.error(f"[DATA AGGREGATOR] Error processing data: {str(e)}")
             return False 

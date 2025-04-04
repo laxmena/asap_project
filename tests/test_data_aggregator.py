@@ -26,7 +26,20 @@ def setup_bot_metadata(redis_conn: Redis) -> bool:
         bots = [
             {
                 "bot_type": "ground_bot",
-                "bot_id": "12",
+                "bot_id": "Ground Bot Alpha",
+                "altitude": 22,
+                "lat": 12.1212,
+                "long": -121.234,
+                "battery_level": 22.3,
+                "status": "available",
+                "contains_aid_kit": True,
+                "capabilities": "Search - Scans the target disaster area, and collects information such as Photos, Distress voice signal recognition, Identify toxic gas emissions\n"
+                              "Assist Rescue - Assists human first responder during the rescue task\n"
+                              "Dispatch aid package - Dispatches items such as water, food, first aid kit, to the human survivors."
+            },
+            {
+                "bot_type": "ground_bot",
+                "bot_id": "Ground Bot Beta",
                 "altitude": 22,
                 "lat": 12.1212,
                 "long": -121.234,
@@ -39,23 +52,33 @@ def setup_bot_metadata(redis_conn: Redis) -> bool:
             },
             {
                 "bot_type": "drone_bot",
-                "bot_id": "21",
-                "altitude": 22,
-                "lat": 12.1212,
+                "bot_id": "Rescue Drone 1",
+                "altitude": 100,
+                "lat": 18.332,
                 "long": -121.234,
-                "battery_level": 78.2,
+                "battery_level": 18.2,
                 "status": "available",
                 "capabilities": "Search - Scans the target disaster area. It collects and process Images, Thermal images, Hazard detection - such as fire, flood, structural damage."
             },
             {
                 "bot_type": "drone_bot",
-                "bot_id": "22",
+                "bot_id": "Rescue Drone 2",
                 "altitude": 22,
-                "lat": 12.1212,
-                "long": -121.234,
-                "battery_level": 78.2,
-                "status": "available",
+                "lat": 16.1212,
+                "long": -123.234,
+                "battery_level": 98.2,
+                "status": "not_available",
                 "capabilities": "Search - Scans the target disaster area. It collects and process Images, Thermal images, Hazard detection - such as fire, flood, structural damage."
+            },
+            {
+                "bot_type": "drone_bot",
+                "bot_id": "Rescue Drone 3",
+                "altitude": 200,
+                "lat": 13.1212,
+                "long": -119.234,
+                "battery_level": 78.2,
+                "status": "avvailable",
+                "capabilities": "Search - Scans the target disaster area, can take pictures of the area. It collects and process Images, Thermal images, Hazard detection - such as fire, flood, structural damage."
             }
         ]
 
@@ -152,10 +175,10 @@ def send_test_human_report():
             "lat": 37.7749, 
             "long": -122.4194,
             "timestamp": datetime.now().isoformat(),
-            "source": "ground_1",
+            "source": "lakshmanan",
             "report": {
                 "type": "survivor_found",
-                "details": "Fire found in the building",
+                "details": "Fire in the building, lots of smoke and flames. Surivors in top floor of the building. Need immediate assistance.",
                 "urgency": "high"
             }
         }
